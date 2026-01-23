@@ -105,7 +105,7 @@ export function ProductManagement() {
     const matchesStatus =
       statusFilter === "all" || product.status === statusFilter;
 
-    console.log(categoryFilter, product.category);
+    
 
     return matchesSearch && matchesCategory && matchesStatus;
   });

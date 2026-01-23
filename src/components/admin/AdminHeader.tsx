@@ -20,16 +20,6 @@ export function AdminHeader() {
       <div className="flex h-16 items-center justify-between px-6">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
-          
-          <div className="hidden md:flex items-center gap-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="Search products, orders, customers..."
-                className="pl-10 w-80 bg-accent border-0"
-              />
-            </div>
-          </div>
         </div>
 
         <div className="flex items-center gap-4">

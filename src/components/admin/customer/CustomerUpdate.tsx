@@ -20,6 +20,7 @@ export const EditUser = ({
     lastName: "",
     email: "",
     role: "customer",
+    phone:""
   });
 
   // ✅ SYNC CUSTOMER DATA WHEN DIALOG OPENS
@@ -30,6 +31,7 @@ export const EditUser = ({
         lastName: customer.lastName || "",
         email: customer.email || "",
         role: customer.role || "customer",
+        phone:customer.phone 
       });
     }
   }, [customer, isOpen]);
@@ -80,6 +82,15 @@ export const EditUser = ({
               type="email"
               name="email"
               value={formData.email}
+              onChange={handleChange}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Phone</label>
+            <Input
+              type="phone"
+              name="phone"
+              value={formData.phone}
               onChange={handleChange}
             />
           </div>

@@ -136,40 +136,33 @@ const Customers = () => {
     }
   };
 
-const handleUpdateProfile = async (id, updatedData) => {
-  try {
-
-    const res = await axios.put(
-      `${BASE_URL}/users/${id}`,
-      updatedData,
-      {
+  const handleUpdateProfile = async (id, updatedData) => {
+    try {
+      const res = await axios.put(`${BASE_URL}/users/${id}`, updatedData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
         withCredentials: true,
-      }
-    );
+      });
 
-    toast.success("User updated successfully");
+      toast.success("User updated successfully");
 
-    
-    setAllCustomer((prev) =>
-      prev.map((user) =>
-        user._id === id ? { ...user, ...updatedData } : user
-      )
-    );
+      setAllCustomer((prev) =>
+        prev.map((user) =>
+          user._id === id ? { ...user, ...updatedData } : user,
+        ),
+      );
 
-    setIsEditProfile(false);
-  } catch (error) {
-    console.error("UPDATE FAILED", error);
-    toast.error("Failed to update user");
-  }
-};
-
+      setIsEditProfile(false);
+    } catch (error) {
+      console.error("UPDATE FAILED", error);
+      toast.error("Failed to update user");
+    }
+  };
 
   const openEditDialog = (customer) => {
     setIsEditProfile(true);
-    setIsProfileOpen(false)
+    setIsProfileOpen(false);
     setSelectedCustomer(customer);
   };
 
@@ -243,6 +236,7 @@ const handleUpdateProfile = async (id, updatedData) => {
                   <TableHead>Contact</TableHead>
                   <TableHead>Total Spent</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Phone No</TableHead>
                   <TableHead>Last Order</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -300,6 +294,10 @@ const handleUpdateProfile = async (id, updatedData) => {
                       >
                         {customer.role || "USER"}
                       </Badge>
+                    </TableCell>
+
+                    <TableCell>
+                      {customer.phone || "1234567890"}
                     </TableCell>
 
                     {/* Last Order */}

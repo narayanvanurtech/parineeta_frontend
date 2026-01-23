@@ -24,14 +24,20 @@ import { AttributeManager } from "./category/AttributeManager";
 import { BASE_URL } from "../ui/config";
 import axios from "axios";
 import { toast } from "sonner";
+import { log } from "console";
 
 export function CategoryManagement() {
+  
   const [categories, setCategories] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [addingCategory, setAddingCategory] = useState<boolean>(false);
   const [mode, setMode] = useState<"add" | "edit" | "subtitle" | null>(null);
   const [categoryName,setCategoryName]=useState<any>("")
  const [selectedCategory, setSelectedCategory] = useState<any>(null);
+ const [countSubCategory,setCountSubCategory]=useState<any>(0)
+
+
+ 
 
   const [newCategory, setNewCategory] = useState<any>({
     name: "",
@@ -49,7 +55,7 @@ export function CategoryManagement() {
 
   const token = localStorage.getItem("token");
 
-  // Fetch products
+ 
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -94,7 +100,7 @@ const onCategorySelect = (category: any) => {
   setNewCategory({
     ...category, 
   });
-  setCategoryName(category); 
+  setCategoryName(category.name); 
 };
 
 
@@ -107,35 +113,64 @@ const onCategorySelect = (category: any) => {
     });
   };
 
-  const onDeleteCategory = async (_id: string) => {
-    if (!_id) {
-      toast.error("Category ID is missing");
-      return;
+ const onDeleteCategory = async (item: any) => {
+  console.log("DELETE ITEM:", item);
+
+  const isCategory = !item.categoryId;
+
+  try {
+    // 🟥 DELETE MAIN CATEGORY
+    if (isCategory) {
+      await axios.delete(
+        `${BASE_URL}/categories/${item._id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true
+        }
+      );
+
+      toast.success("Category deleted");
+
+      setCategories(prev =>
+        prev.filter(cat => cat._id !== item._id)
+      );
     }
 
-    const token = localStorage.getItem("token");
+    // 🟦 DELETE SUBTITLE (ANY LEVEL)
+    else {
+      const res = await axios.delete(
+        `${BASE_URL}/subtitles/delete`,
+        {
+          data: {
+            categoryId: item.categoryId, // ROOT CATEGORY
+            subtitleId: item._id         // SUBTITLE TO DELETE
+          },
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true
+        }
+      );
 
-    try {
-      const res = await axios.delete(`${BASE_URL}/categories/${_id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        withCredentials: true,
-      });
+      toast.success("Subtitle deleted");
 
-      toast.success(res.data?.message || "Category deleted successfully");
-
-      setCategories((prev) => prev.filter((cat) => cat._id !== _id));
-    } catch (error: any) {
-      console.error("DELETE ERROR:", error.response?.data);
-      toast.error(error.response?.data?.message || "Failed to delete category");
+      // backend returns updated category
+      setCategories(prev =>
+        prev.map(cat =>
+          cat._id === item.categoryId ? res.data : cat
+        )
+      );
     }
-  };
+
+  } catch (err: any) {
+    console.error("DELETE ERROR:", err.response?.data);
+    toast.error(err.response?.data?.message || "Delete failed");
+  }
+};
 
   const onEditCategory = (category: any) => {
     setMode("edit");
     setAddingCategory(true);
     setNewCategory(category);
+    setCategoryName(category.name)
   };
 
   const handleCancel = () => {
@@ -146,46 +181,76 @@ const onCategorySelect = (category: any) => {
     });
   };
 
-  const handleUpdateCategory = async () => {
-    const token = localStorage.getItem("token");
+ const handleUpdateCategory = async () => {
+  const token = localStorage.getItem("token");
 
-    if (!newCategory._id) {
-      toast.error("Category ID is missing");
-      return;
-    }
+  if (!newCategory._id) {
+    toast.error("ID is missing");
+    return;
+  }
 
-    try {
-      const res = await axios.put(
+  const isCategory = !newCategory.categoryId;
+
+  try {
+    let res;
+
+    // 🔹 UPDATE CATEGORY
+    if (isCategory) {
+      res = await axios.put(
         `${BASE_URL}/categories/${newCategory._id}`,
         newCategory,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
-        },
+        }
       );
 
-      if (res.data?.message === "Category updated successfully") {
-        toast.success(res.data?.message || "Category updated successfully");
+      toast.success("Category updated");
 
-        setCategories((prev) =>
-          prev.map((cat) =>
-            cat._id === newCategory._id ? res.data.category : cat,
-          ),
-        );
-
-        setMode("edit");
-        setNewCategory({
-          name: "",
-          description: "",
-        });
-      }
-    } catch (error: any) {
-      console.error("UPDATE ERROR:", error.response?.data);
-      toast.error(error.response?.data?.message || "Failed to update category");
+      setCategories(prev =>
+        prev.map(cat =>
+          cat._id === newCategory._id ? res.data.category : cat
+        )
+      );
     }
-  };
+
+    // 🔹 UPDATE SUBTITLE
+    else {
+      res = await axios.put(
+        `${BASE_URL}/subtitles/update`,
+        {
+          categoryId: newCategory.categoryId,
+          subtitleId: newCategory._id,
+          name: newCategory.name,
+          description: newCategory.description,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+        }
+      );
+
+      toast.success("Subtitle updated");
+
+      setCategories(prev =>
+        prev.map(cat =>
+          cat._id === newCategory.categoryId ? res.data : cat
+        )
+      );
+    }
+
+    // 🔹 Reset state
+    setMode("edit");
+    setAddingCategory(false);
+    setNewCategory({ name: "", description: "" });
+
+  } catch (error: any) {
+    console.error("UPDATE ERROR:", error.response?.data);
+    toast.error(error.response?.data?.message || "Update failed");
+  }
+};
+
+
 
   const handleSaveCategory = async () => {
     const token = localStorage.getItem("token");
@@ -215,26 +280,34 @@ const onCategorySelect = (category: any) => {
     }
   };
 
-  const addSubTitle = (item: any) => {
-    console.log(item)
+//nested subcategory
+const addSubTitle = (item: any) => {
+  console.log("ADD SUBTITLE ITEM:", item);
+
   setMode("subtitle");
   setAddingCategory(true);
+  setCategoryName(item)
   setNewCategory({ name: "", description: "" });
+  
+  const isCategory = !item.categoryId; 
+  const isSubtitle =  item._id ===item.categoryId   
 
   setSubtitleContext({
-    categoryId: item.categoryId || item._id, // category always
-    parentSubtitleId: item.subtitles ? null : item._id
+    categoryId: isCategory
+      ? item._id            
+      : item.categoryId,    
+
+    parentSubtitleId: isSubtitle
+      ? undefined         
+      : item._id           
   });
 };
 
-  const handleSubtitle = async () => {
-  if (!subtitleContext) {
-    toast.error("Subtitle context missing");
-    return;
-  }
+const handleSubtitle = async () => {
+  console.log("SUBTITLE CONTEXT:", subtitleContext);
 
-  if (!newCategory.name.trim()) {
-    toast.error("Subtitle name is required");
+  if (!subtitleContext?.categoryId) {
+    toast.error("Category ID is required");
     return;
   }
 
@@ -243,7 +316,7 @@ const onCategorySelect = (category: any) => {
       `${BASE_URL}/subtitles/add`,
       {
         categoryId: subtitleContext.categoryId,
-        parentSubtitleId: subtitleContext.parentSubtitleId || null,
+        parentSubtitleId: subtitleContext.parentSubtitleId || undefined,
         subtitle: {
           name: newCategory.name,
           description: newCategory.description
@@ -255,16 +328,18 @@ const onCategorySelect = (category: any) => {
       }
     );
 
-    toast.success("Subtitle added successfully");
+    const updatedCategory = res.data;
 
-    // backend returns updated category
+   
     setCategories(prev =>
       prev.map(cat =>
-        cat._id === subtitleContext.categoryId ? res.data : cat
+        cat._id === updatedCategory._id ? updatedCategory : cat
       )
     );
 
-    // reset
+    toast.success("Subtitle added successfully");
+
+ 
     setNewCategory({ name: "", description: "" });
     setSubtitleContext(null);
     setAddingCategory(false);
@@ -277,6 +352,30 @@ const onCategorySelect = (category: any) => {
 };
 
 
+
+//count subcategory
+useEffect(()=>{
+  const countSubtitles = (subtitles: any[] = []): number => {
+  let count = 0;
+
+  for (const sub of subtitles) {
+    count += 1; // count this subtitle
+
+    if (sub.subtitles && sub.subtitles.length > 0) {
+      count += countSubtitles(sub.subtitles); // count nested subtitles
+    }
+  }
+
+  return count;
+};
+
+
+const totalSubtitles = categories.reduce((total, category) => {
+  return total + countSubtitles(category.subtitles);
+}, 0);
+setCountSubCategory(totalSubtitles)
+
+},[categories])
 
 
   return (
@@ -314,10 +413,7 @@ const onCategorySelect = (category: any) => {
             </div>
             <div>
               <p className="text-2xl font-bold">
-                {categories.reduce(
-                  (total, cat) => total + (cat.children?.length || 0),
-                  0,
-                )}
+                {countSubCategory}
               </p>
               <p className="text-sm text-muted-foreground">Subcategories</p>
             </div>
@@ -381,6 +477,8 @@ const onCategorySelect = (category: any) => {
               onEditCategory={onEditCategory}
               onDeleteCategory={onDeleteCategory}
               addSubTitle={addSubTitle}
+             
+
             />
 
             <Card className="shadow-card">
@@ -388,8 +486,8 @@ const onCategorySelect = (category: any) => {
                 <CardTitle>
                   {" "}
                   {mode === "add" && "Add New Category"}
-                  {mode === "edit" && "Edit Category"}
-                  {mode === "subtitle" && `Add Subtitle  (${categoryName.name})`}
+                  {mode === "edit" && `Edit Category   (${categoryName})`}
+                  {mode === "subtitle" && `Add Subtitle  (${categoryName})`}
                 </CardTitle>
                 <CardDescription>
                   {addingCategory
