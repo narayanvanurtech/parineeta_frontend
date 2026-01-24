@@ -188,7 +188,7 @@ export function CategoryTreeView({
             <Button
               variant="ghost"
               size="sm"
-              className="w-6 h-6 p-0"
+              className="w-6 h-6 p-0 "
               onClick={(e) => {
                 e.stopPropagation();
                 onEditCategory({
@@ -199,27 +199,20 @@ export function CategoryTreeView({
                 });
               }}
             >
-              <Edit className="w-3 h-3" />
+              <Edit className="w-3 h-3 cursor-pointer" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="w-6 h-6 p-0"
+              className="w-6 h-6 p-0 cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
                 onDeleteCategory(category);
               }}
             >
-              <Trash2 className="w-3 h-3" />
+              <Trash2 className="w-3 h-3 cursor-pointer" />
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-6 h-6 p-0 cursor-move"
-              onMouseDown={() => setDraggedCategory(category._id)}
-            >
-              <Move className="w-3 h-3" />
-            </Button>
+
           </div>
         </div>
 
