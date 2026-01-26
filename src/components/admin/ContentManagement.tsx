@@ -372,17 +372,17 @@ export function ContentManagement() {
       fd.append("publishDate", postDraft.publishDate || "");
       fd.append("content", postDraft.content);
 
-      // ✅ Only send old image URLs
+    
       if (Array.isArray(postDraft.image)) {
         postDraft.image.forEach((url) => {
-          // Make sure it's a URL, not a blob preview
+        
           if (typeof url === "string" && !url.startsWith("blob:")) {
             fd.append("oldImages[]", url);
           }
         });
       }
 
-      // ✅ Send newly added files
+    
       blogImages.forEach((file) => {
         fd.append("image", file);
       });
@@ -397,19 +397,18 @@ export function ContentManagement() {
       if (res.data.success) {
         toast({ title: res.data.message });
 
-        // 🔥 Update list
+      
         setPostList((prev) =>
           prev.map((p) => (p._id === id ? res.data.blog : p)),
         );
 
-        // 🔥 Update state with the saved blog
         setPostDraft(res.data.blog);
 
-        setPostDraft(null); // clear current draft
-        setBlogImages([]); // clear temporary files
-        setBlogImagePreviews([]); // clear previews
-        setSelectedPost(null); // clear preview selection
-        setIsArticleDialogOpen(false); // close dialog
+        setPostDraft(null); 
+        setBlogImages([]); 
+        setBlogImagePreviews([]); 
+        setSelectedPost(null); 
+        setIsArticleDialogOpen(false); 
       }
     } catch (error) {
       toast({

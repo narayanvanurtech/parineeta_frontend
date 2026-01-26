@@ -59,6 +59,24 @@ const navigationGroups = [
     ]
   },
   {
+  label: "Ziba Boutique",
+  items: [
+    {
+      title: "Ziba Boutique Customers",
+      url: "/admin/ziva",
+      icon: Users,
+      badge: null,
+    },
+     {
+      title: "subject",
+      url: "/admin/zivaSubject",
+      icon: Users,
+      badge: null,
+    },
+  ],
+}
+,
+  {
     label: "Business Intelligence",
     items: [
       { title: "Reports & Analytics", url: "/admin/reports", icon: BarChart3, badge: null },

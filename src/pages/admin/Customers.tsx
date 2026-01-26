@@ -156,7 +156,13 @@ const Customers = () => {
       setIsEditProfile(false);
     } catch (error) {
       console.error("UPDATE FAILED", error);
-      toast.error("Failed to update user");
+
+ 
+    const errMsg =
+      error?.response?.data?.error || error?.response?.data?.message || 
+      "Failed to update user";
+
+    toast.error(errMsg);
     }
   };
 

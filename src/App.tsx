@@ -15,6 +15,8 @@ import Categories from "./pages/admin/Categories";
 import Tax from "./pages/admin/Tax";
 import Shipping from "./pages/admin/Shipping";
 import NotFound from "./pages/NotFound";
+import ZivaBoutique from "./pages/admin/ZivaBoutique";
+import ZivaSubject from "./pages/admin/ZivaSubject";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +39,8 @@ const App = () => (
           <Route path="/admin/cms" element={<CMS />} />
           <Route path="/admin/tax" element={<Tax />} />
           <Route path="/admin/shipping" element={<Shipping />} />
+          <Route path="/admin/ziva" element={<ZivaBoutique/>} />
+          <Route path="/admin/zivaSubject" element={<ZivaSubject />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
