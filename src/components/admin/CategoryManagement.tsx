@@ -486,8 +486,8 @@ setCountSubCategory(totalSubtitles)
                 <CardTitle>
                   {" "}
                   {mode === "add" && "Add New Category"}
-                  {mode === "edit" && `Edit Category   (${categoryName})`}
-                  {mode === "subtitle" && `Add Subtitle  (${categoryName})`}
+                  {mode === "edit" && `Edit Category   (${categoryName.name})`}
+                  {mode === "subtitle" && `Add Subtitle  (${categoryName.name})`}
                 </CardTitle>
                 <CardDescription>
                   {addingCategory

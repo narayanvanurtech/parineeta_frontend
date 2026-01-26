@@ -59,10 +59,16 @@ import { BASE_URL } from "../ui/config";
 import axios from "axios";
 import { ProductViewDetails } from "./product/ProductViewDetails";
 import { toast } from "sonner";
+import AddProduct from "./product/AddProduct";
+import ArticleDialog from "./Dialog";
+import VariantDialog from "./Dialog";
 
 
 
 export function ProductManagement() {
+  const [isVariantOpen, setIsVariantOpen] = useState(false);
+const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -72,8 +78,10 @@ export function ProductManagement() {
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
   const [viewProduct, setViewProduct] = useState<any>(null);
+  const [openEdit,setOpenEdit]=useState(false)
 
   const [products, setProducts] = useState<any[]>([]);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -151,39 +159,119 @@ export function ProductManagement() {
 
   const handleEditProduct = (product: any) => {
     setEditingProduct(product);
-    setShowProductWizard(true);
+    setOpenEdit(true);
   };
 
-  const productDelete=async (id)=>{
- if (!id) {
-    toast.error("product ID is missing");
+const productDelete = async (id: string) => {
+  if (!id) {
+    toast.error("Product ID is missing");
     return;
   }
 
   const token = localStorage.getItem("token");
+  if (!token) {
+    toast.error("Unauthorized. Please login again.");
+    return;
+  }
 
   try {
-    const res = await axios.delete(
-      `${BASE_URL}/products/${id}`,
+    const res = await axios.delete(`${BASE_URL}/products/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    });
+
+console.log(res)
+    setProducts((prev) => prev.filter((product) => product._id !== id));
+    setViewProduct((prev: any) =>
+      prev && prev._id === id ? null : prev
+    );
+
+    toast.success(res.data.message || "Product deleted successfully");
+  } catch (error: any) {
+    console.error("DELETE ERROR:", error);
+    toast.error(
+      error?.response?.data?.message || "Failed to delete product"
+    );
+  }
+};
+
+  
+
+//Variant Open 
+
+  const openVariantForm = (productId: string) => {
+  setSelectedProductId(productId);
+  setIsVariantOpen(true);
+};
+
+
+
+const handleSaveVariant = async (variant: any) => {
+  const token = localStorage.getItem("token");
+  if (!selectedProductId) return;
+
+  try {
+    const formData = new FormData();
+    formData.append("color", variant.color);
+    formData.append("stock", String(variant.stock));
+    formData.append("price", String(variant.price));
+
+    variant.images.forEach((file: File) =>
+      formData.append("images", file)
+    );
+
+    const res = await axios.post(
+      `${BASE_URL}/products/${selectedProductId}/variants`,
+      formData,
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
       }
     );
 
-    toast.success(res.data?.message || "product deleted successfully");
+    if (!res.data.success) {
+      toast.error(res.data.message);
+      return;
+    }else{
+       const savedVariant = res.data.variant;
 
-   
-    setProducts((prev) => prev.filter((product) => product._id !== id));
+    // ✅ Update products list
+    setProducts((prev) =>
+      prev.map((product) =>
+        product._id === selectedProductId
+          ? {
+              ...product,
+              variants: [...(product.variants || []), savedVariant],
+            }
+          : product
+      )
+    );
 
-  } catch (error: any) {
-    console.error("DELETE ERROR:", error.response?.data);
-    toast.error(error.response?.data?.message || "Failed to delete product");
+    // ✅ Update opened view dialog
+    setViewProduct((prev: any) =>
+      prev && prev._id === selectedProductId
+        ? {
+            ...prev,
+            variants: [...(prev.variants || []), savedVariant],
+          }
+        : prev
+    );
+
+    toast.success(res.data.message || "Variant added successfully");
+    setIsVariantOpen(false);
+    }
+
+  
+  } catch (err: any) {
+    console.error(err);
+    toast.error("Failed to save variant");
   }
 };
-  
+
+
+
 
   return (
     <div className="space-y-6">
@@ -209,7 +297,7 @@ export function ProductManagement() {
           <Button
             variant="premium"
             className="flex items-center gap-2"
-            onClick={() => setShowProductWizard(true)}
+           onClick={() => setOpen(true)}
           >
             <Plus className="w-4 h-4" />
             Add Product
@@ -429,11 +517,12 @@ export function ProductManagement() {
                 </TableHead>
                 <TableHead>Product</TableHead>
                 <TableHead>Category</TableHead>
+                   <TableHead>Subcategory</TableHead>
                 <TableHead>Price</TableHead>
                 <TableHead>Stock</TableHead>
-                <TableHead>Sales</TableHead>
-                <TableHead>Rating</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Variant Items</TableHead>
+                <TableHead>Add Variant</TableHead>
+             
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -478,14 +567,17 @@ export function ProductManagement() {
                   <TableCell>
                     <div>
                       <p className="font-medium">{product.category}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {product.subcategory}
-                      </p>
+
+                    </div>
+                  </TableCell>
+                   <TableCell>
+                    <div>
+                      <p  className="font-medium">{product.subcategory}</p>
                     </div>
                   </TableCell>
                   <TableCell>
                     <span className="font-medium">
-                      ₹{product.price.toLocaleString()}
+                      ₹{product.price?.toLocaleString()}
                     </span>
                   </TableCell>
                   <TableCell>
@@ -497,21 +589,19 @@ export function ProductManagement() {
                       {product.stock} units
                     </span>
                   </TableCell>
+                <TableCell>
+  <div className="flex items-center gap-1">
+    <TrendingUp className="w-4 h-4 text-success" />
+    <span className="font-medium">
+      {product.variants?.length || 0}
+    </span>
+  </div>
+</TableCell>
+
                   <TableCell>
-                    <div className="flex items-center gap-1">
-                      <TrendingUp className="w-4 h-4 text-success" />
-                      <span className="font-medium">{product.sales}</span>
-                    </div>
+                    <Button onClick={()=>openVariantForm(product._id)} >Variant</Button>
                   </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Star className="w-4 h-4 fill-primary text-primary" />
-                      <span className="font-medium">{product.rating}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {getStatusBadge(product.status, product.stock)}
-                  </TableCell>
+                 
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -559,7 +649,7 @@ export function ProductManagement() {
       </Card>
 
       {/* Modals */}
-      <ProductWizard
+      {/* <ProductWizard
         isOpen={showProductWizard}
         onClose={() => {
           setShowProductWizard(false);
@@ -567,7 +657,20 @@ export function ProductManagement() {
         }}
         setProduct={setProducts}
         editingProduct={editingProduct}
-      />
+      /> */}
+
+     <AddProduct
+  isOpen={open || openEdit}
+  onClose={() => {
+    setOpen(false);
+    setOpenEdit(false);
+    setEditingProduct(null);
+  }}
+  setProduct={setProducts}
+  editingProduct={editingProduct}
+/>
+
+    
 
       <BulkUploadWizard
         isOpen={showBulkUpload}
@@ -576,9 +679,22 @@ export function ProductManagement() {
       <ProductViewDetails
   isOpen={!!viewProduct}
   product={viewProduct}
+  setProduct={setProducts}
   onClose={() => setViewProduct(null)}
 />
 
+<VariantDialog
+  open={isVariantOpen}
+  onClose={() => {
+    setIsVariantOpen(false);
+    setSelectedProductId(null);
+  }}
+  productId={selectedProductId}
+  onSaveVariant={handleSaveVariant} 
+/>
+
     </div>
+
+    
   );
 }
