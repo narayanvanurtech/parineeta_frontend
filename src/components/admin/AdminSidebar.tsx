@@ -42,6 +42,7 @@ const navigationGroups = [
     items: [
       { title: "Product Management", url: "/admin/products", icon: Package, badge: 12 },
       { title: "Categories & Attributes", url: "/admin/categories", icon: Tags, badge: null },
+      { title: "Variant Management", url: "/admin/variant", icon:Package , badge: null },
     ]
   },
   {

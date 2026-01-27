@@ -83,6 +83,7 @@ const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
 
+  const closeParent = undefined
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -590,8 +591,8 @@ const handleSaveVariant = async (variant: any) => {
                     </span>
                   </TableCell>
                 <TableCell>
-  <div className="flex items-center gap-1">
-    <TrendingUp className="w-4 h-4 text-success" />
+  <div className="flex items-center justify-center gap-1">
+    
     <span className="font-medium">
       {product.variants?.length || 0}
     </span>
@@ -599,7 +600,7 @@ const handleSaveVariant = async (variant: any) => {
 </TableCell>
 
                   <TableCell>
-                    <Button onClick={()=>openVariantForm(product._id)} >Variant</Button>
+                    <Button onClick={()=>openVariantForm(product._id)} >Add Variant</Button>
                   </TableCell>
                  
                   <TableCell className="text-right">
@@ -665,9 +666,11 @@ const handleSaveVariant = async (variant: any) => {
     setOpen(false);
     setOpenEdit(false);
     setEditingProduct(null);
+  
   }}
   setProduct={setProducts}
   editingProduct={editingProduct}
+  closeParent={closeParent}
 />
 
     

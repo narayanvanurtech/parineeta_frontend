@@ -141,6 +141,10 @@ const AddProduct = ({ isOpen, onClose, setProduct, editingProduct = null,closePa
           withCredentials: true,
         });
         toast.success("Product created successfully");
+        setTimeout(()=>{
+             toast.success("Add Variant");
+        },2000)
+     
        
   setProduct((prev) => [...prev, res.data.product]);
       }

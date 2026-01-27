@@ -125,6 +125,8 @@ export function ContentManagement() {
   const [postList, setPostList] = useState([]);
   const [isArticleDialogOpen, setIsArticleDialogOpen] = useState(false);
   const [postDraft, setPostDraft] = useState<any | null>(null);
+  const [blogSearch, setBlogSearch] = useState("");
+
   const [selectedImage, setSelectedImage] = useState(null);
   const [uploadedImages, setUploadedImages] = useState<{
     [key: string]: string;
@@ -327,7 +329,7 @@ export function ContentManagement() {
     }
   };
 
-  const handleImageUpload = (file:any,data) => {};
+  const handleImageUpload = (file: any, data) => {};
 
   const handleBlogDelete = async (id) => {
     const res = await axios.delete(`${BASE_URL}/blogs/${id}`, {
@@ -372,17 +374,14 @@ export function ContentManagement() {
       fd.append("publishDate", postDraft.publishDate || "");
       fd.append("content", postDraft.content);
 
-    
       if (Array.isArray(postDraft.image)) {
         postDraft.image.forEach((url) => {
-        
           if (typeof url === "string" && !url.startsWith("blob:")) {
             fd.append("oldImages[]", url);
           }
         });
       }
 
-    
       blogImages.forEach((file) => {
         fd.append("image", file);
       });
@@ -397,18 +396,17 @@ export function ContentManagement() {
       if (res.data.success) {
         toast({ title: res.data.message });
 
-      
         setPostList((prev) =>
           prev.map((p) => (p._id === id ? res.data.blog : p)),
         );
 
         setPostDraft(res.data.blog);
 
-        setPostDraft(null); 
-        setBlogImages([]); 
-        setBlogImagePreviews([]); 
-        setSelectedPost(null); 
-        setIsArticleDialogOpen(false); 
+        setPostDraft(null);
+        setBlogImages([]);
+        setBlogImagePreviews([]);
+        setSelectedPost(null);
+        setIsArticleDialogOpen(false);
       }
     } catch (error) {
       toast({
@@ -873,7 +871,12 @@ export function ContentManagement() {
                 <div className="flex justify-between items-center">
                   <div className="relative flex-1 max-w-md">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                    <Input placeholder="Search articles..." className="pl-10" />
+                    <Input
+                      placeholder="Search articles..."
+                      className="pl-10"
+                      value={blogSearch}
+                      onChange={(e) => setBlogSearch(e.target.value)}
+                    />
                   </div>
                   <Button
                     variant="premium"
@@ -908,7 +911,12 @@ export function ContentManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {postList.map((post) => (
+                    {postList
+  .filter((post) =>
+    post.title?.toLowerCase().includes(blogSearch.toLowerCase()) ||
+    post.category?.toLowerCase().includes(blogSearch.toLowerCase()) ||
+    post.author?.toLowerCase().includes(blogSearch.toLowerCase())
+  ).map((post) => (
                       <TableRow key={post._id}>
                         <TableCell>
                           <div className="space-y-1">
