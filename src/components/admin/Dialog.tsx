@@ -97,104 +97,120 @@ const VariantDialog = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[80vh] flex flex-col">
-  <DialogHeader>
-    <DialogTitle>Add Variant</DialogTitle>
-  </DialogHeader>
+   <Dialog open={open} onOpenChange={onClose}>
+  <DialogContent className="max-w-md max-h-[85vh] flex flex-col p-0">
+    {/* Header */}
+    <DialogHeader className="px-6 pt-6">
+      <DialogTitle className="text-lg font-semibold">
+        Add Variant
+      </DialogTitle>
+      <p className="text-sm text-muted-foreground">
+        Product ID: <span className="font-medium">{productId}</span>
+      </p>
+    </DialogHeader>
 
-  {/* Scrollable content */}
-  <div className="flex-1 overflow-y-auto space-y-4 py-4">
-    <p className="text-sm text-muted-foreground">
-      Product ID: <span className="font-medium">{productId}</span>
-    </p>
+    {/* Scrollable content */}
+    <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
+      {/* Color */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Color</label>
+        <Input
+          placeholder="e.g. Red"
+          value={variant.color}
+          onChange={(e) =>
+            setVariant({ ...variant, color: e.target.value })
+          }
+        />
+      </div>
 
-    {/* Color */}
-    <div>
-      <label className="text-sm font-medium">Color</label>
-      <Input
-        placeholder="e.g. Red"
-        value={variant.color}
-        onChange={(e) =>
-          setVariant({ ...variant, color: e.target.value })
-        }
-      />
-    </div>
-
-    {/* Stock */}
-    <div>
-      <label className="text-sm font-medium">Stock</label>
-      <Input
-        type="number"
-        min={0}
-        value={variant.stock}
-        onChange={(e) =>
-          setVariant({
-            ...variant,
-            stock: Number(e.target.value) || 0,
-          })
-        }
-      />
-    </div>
-
-    {/* Price */}
-    <div>
-      <label className="text-sm font-medium">Price</label>
-      <Input
-        type="number"
-        min={0}
-        value={variant.price}
-        onChange={(e) =>
-          setVariant({
-            ...variant,
-            price: Number(e.target.value) || 0,
-          })
-        }
-      />
-    </div>
-
-    {/* Images */}
-    <div>
-      <label className="text-sm font-medium">Images</label>
-      <input
-        type="file"
-        accept="image/*"
-        multiple
-        onChange={handleImageSelect}
-      />
-
-      {imagePreviews.length > 0 && (
-        <div className="flex gap-2 flex-wrap mt-3">
-          {imagePreviews.map((img, idx) => (
-            <div key={idx} className="relative">
-              <img
-                src={img}
-                alt="preview"
-                className="w-20 object-cover rounded border"
-              />
-              <button
-                type="button"
-                onClick={() => removeImage(idx)}
-                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs"
-              >
-                ✕
-              </button>
-            </div>
-          ))}
+      {/* Stock & Price */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Stock</label>
+          <Input
+            type="number"
+            min={0}
+            value={variant.stock}
+            onChange={(e) =>
+              setVariant({
+                ...variant,
+                stock: Number(e.target.value) || 0,
+              })
+            }
+          />
         </div>
-      )}
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Price</label>
+          <Input
+            type="number"
+            min={0}
+            value={variant.price}
+            onChange={(e) =>
+              setVariant({
+                ...variant,
+                price: Number(e.target.value) || 0,
+              })
+            }
+          />
+        </div>
+      </div>
+
+      {/* Images */}
+      <div className="space-y-3">
+        <label className="text-sm font-medium">Images</label>
+
+        <label className="flex flex-col items-center justify-center gap-2 border border-dashed rounded-lg p-4 cursor-pointer hover:bg-muted transition">
+          <span className="text-sm text-muted-foreground">
+            Click to upload images
+          </span>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={handleImageSelect}
+          />
+        </label>
+
+        {imagePreviews.length > 0 && (
+          <div className="flex gap-3 flex-wrap">
+            {imagePreviews.map((img, idx) => (
+              <div
+                key={idx}
+                className="relative w-20  rounded-lg overflow-hidden border"
+              >
+                <img
+                  src={img}
+                  alt="preview"
+                  className="w-full  object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeImage(idx)}
+                  className="absolute top-1 right-1 bg-black/70 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
-  </div>
 
-  <DialogFooter>
-    <Button variant="outline" onClick={onClose}>
-      Cancel
-    </Button>
-    <Button onClick={handleSave}>Save Variant</Button>
-  </DialogFooter>
-</DialogContent>
+    {/* Footer */}
+    <DialogFooter className="px-6 py-4 border-t">
+      <Button variant="outline" onClick={onClose}>
+        Cancel
+      </Button>
+      <Button onClick={handleSave}>
+        Save Variant
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
 
-    </Dialog>
   );
 };
 

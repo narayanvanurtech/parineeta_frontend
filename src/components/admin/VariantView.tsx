@@ -45,9 +45,17 @@ export function VariantViewDetails({
     }
   }, [variant]);
 
- 
 
+  console.log(product)
 
+  const getProduct = product
+  .map((prod) => ({
+    ...prod,
+    variants: prod.variants.filter(
+      (item) => item?._id === variant?._id
+    ),
+  }))
+  .filter((prod) => prod.variants.length > 0);
 
 
   if (!isOpen || !variant) return null;
@@ -60,7 +68,7 @@ export function VariantViewDetails({
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-xl">
-                {product.name} — {variant.color}
+                {getProduct[0].name} — {variant.color}
               </CardTitle>
               <CardDescription>Variant ID: {variant._id}</CardDescription>
             </div>
@@ -101,8 +109,8 @@ export function VariantViewDetails({
             {/* INFO */}
             <div className="flex-1 space-y-4">
               <div className="flex gap-2 flex-wrap">
-                <Badge>{product.category}</Badge>
-                <Badge variant="outline">{product.subcategory}</Badge>
+                <Badge>{getProduct[0].category}</Badge>
+                <Badge variant="outline">{getProduct[0].subcategory}</Badge>
                 <Badge variant="secondary">{variant.color}</Badge>
 
                 {variant.stock < 10 && (
@@ -126,13 +134,21 @@ export function VariantViewDetails({
                 />
               </div>
 
-              <div className="flex gap-3">
-                {product.sizes?.map((size: string) => (
-                  <span key={size} className="px-3 py-1 border rounded text-sm">
-                    {size}
-                  </span>
-                ))}
-              </div>
+              <div>
+  <p className="text-sm font-medium mb-2">Available Sizes</p>
+
+  <div className="flex gap-2 flex-wrap">
+    {getProduct[0].sizes.map((size=>(
+       <span
+                      key={size}
+                      className="px-3 py-1 border rounded text-sm"
+                    >
+                      {size}
+                    </span>
+    )))}
+  </div>
+</div>
+
             </div>
           </div>
         </CardContent>

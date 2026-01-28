@@ -114,114 +114,134 @@ const VariantEditDialog = ({
 
   return (
     <Dialog
-      open={open}
-      onOpenChange={(isOpen) => {
-        if (!isOpen) onClose();
-      }}
-    >
-      <DialogContent className="max-w-md max-h-[80vh] flex flex-col">
-        {/* HEADER */}
-        <DialogHeader>
-          <DialogTitle>Edit Variant</DialogTitle>
-        </DialogHeader>
+  open={open}
+  onOpenChange={(isOpen) => {
+    if (!isOpen) onClose();
+  }}
+>
+  <DialogContent className="max-w-[40vw] max-h-[80vh] flex flex-col overflow-hidden">
+    {/* HEADER */}
+    <DialogHeader className="shrink-0 space-y-1">
+      <DialogTitle className="text-xl font-semibold">
+        Edit Variant
+      </DialogTitle>
+      <p className="text-sm text-muted-foreground">
+        Product ID: <span className="font-medium">{productId}</span>
+      </p>
+    </DialogHeader>
 
-        {/* BODY (SCROLLABLE) */}
-        <div className="flex-1 overflow-y-auto space-y-4 py-4 pr-1">
-          <p className="text-sm text-muted-foreground">
-            Product ID: <span className="font-medium">{productId}</span>
-          </p>
+    {/* BODY */}
+    <div className="flex-1 overflow-y-auto space-y-6 py-1 px-4 ">
+      {/* COLOR */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Color</label>
+        <Input
+          placeholder="e.g. Red"
+          value={color}
+          onChange={(e) => setColor(e.target.value)}
+        />
+      </div>
 
-          {/* COLOR */}
-          <div>
-            <label className="text-sm font-medium">Color</label>
-            <Input value={color} onChange={(e) => setColor(e.target.value)} />
-          </div>
+      {/* STOCK + PRICE */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Stock</label>
+          <Input
+            type="number"
+            value={stock}
+            onChange={(e) => setStock(Number(e.target.value) || 0)}
+          />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Price</label>
+          <Input
+            type="number"
+            value={price}
+            onChange={(e) => setPrice(Number(e.target.value) || 0)}
+          />
+        </div>
+      </div>
 
-          {/* STOCK */}
-          <div>
-            <label className="text-sm font-medium">Stock</label>
-            <Input
-              type="number"
-              value={stock}
-              onChange={(e) => setStock(Number(e.target.value) || 0)}
-            />
-          </div>
+      {/* EXISTING IMAGES */}
+      {existingImages.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-medium">Existing Images</p>
 
-          {/* PRICE */}
-          <div>
-            <label className="text-sm font-medium">Price</label>
-            <Input
-              type="number"
-              value={price}
-              onChange={(e) => setPrice(Number(e.target.value) || 0)}
-            />
-          </div>
-
-          {/* EXISTING IMAGES */}
-          {existingImages.length > 0 && (
-            <div>
-              <p className="text-sm font-medium mb-2">Existing Images</p>
-              <div className="flex gap-2 flex-wrap">
-                {existingImages.map((img) => (
-                  <div key={img} className="relative">
-                    <img
-                      src={img}
-                      className="w-20 h-20 object-cover rounded border"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeExistingImage(img)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 rounded-full text-xs"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {existingImages.map((img) => (
+              <div
+                key={img}
+                className="relative shrink-0 w-20 h-20 border rounded-lg overflow-hidden"
+              >
+                <img
+                  src={img}
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeExistingImage(img)}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 rounded-full text-xs"
+                >
+                  ✕
+                </button>
               </div>
-            </div>
-          )}
-
-          {/* NEW IMAGES */}
-          <div>
-            <label className="text-sm font-medium">Add New Images</label>
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleNewImages}
-            />
-
-            {newPreviews.length > 0 && (
-              <div className="flex gap-2 flex-wrap mt-3">
-                {newPreviews.map((img, idx) => (
-                  <div key={idx} className="relative">
-                    <img
-                      src={img}
-                      className="w-20 h-20 object-cover rounded border"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeNewImage(idx)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 rounded-full text-xs"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+            ))}
           </div>
         </div>
+      )}
 
-        {/* FOOTER */}
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button onClick={handleUpdate}>Update Variant</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      {/* NEW IMAGES */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Add New Images</label>
+
+        <label className="border-2 border-dashed rounded-lg p-5 text-sm text-muted-foreground flex items-center justify-center cursor-pointer hover:border-primary transition">
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleNewImages}
+            className="hidden"
+          />
+          Click to upload images
+        </label>
+
+        {newPreviews.length > 0 && (
+          <div className="flex gap-3 overflow-x-auto pt-3 pb-1">
+            {newPreviews.map((img, idx) => (
+              <div
+                key={idx}
+                className="relative shrink-0 w-20 h-20 border rounded-lg overflow-hidden"
+              >
+                <img
+                  src={img}
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeNewImage(idx)}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 rounded-full text-xs"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+
+    {/* FOOTER */}
+    <DialogFooter className="shrink-0 flex justify-end gap-3">
+      <Button variant="outline" onClick={onClose}>
+        Cancel
+      </Button>
+      <Button onClick={handleUpdate}>
+        Update Variant
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
   );
 };
 
